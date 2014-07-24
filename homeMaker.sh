@@ -57,30 +57,7 @@ while getopts ":qh" opt; do
 	esac
 done
 
-# Creating directories for new users
-#------------------------------------
-cnt=0
-cd ${0%/*}
-getent passwd | awk -F":" -v search="^$domain" '$0 ~ search {printf("%s,%s,%s,%s,%s\n",substr($1,index($1,"\\")+1),$3,$4,$5,$6)}' > /tmp/$$
-while IFS="," read id uid gid name home; do 
-	if [ -d "$home" ]; then
-		chmod 700 "$home"		
-		chown -R "$uid:$gid" "$home"	
-	else
-		[ $id = "guest" -o $id = "krbtgt" ] && continue;
-		[ $verbose -gt 0 ] && printf "Creating home directory for account %-40s\n" "'$name'"
-		cp -rf ./skel/ "$home" 2> /dev/null	
-		chown -R "$uid:$gid" "$home"		
-		chmod 700 "$home"
-		((cnt++))
-	fi
-done < /tmp/$$
-if [ $verbose -gt 0 -a $cnt -gt 0 ]; then
-	printf "$(colorize 0 GREEN 'INFO'): Total number of newly created home directories is %d\n" $cnt
-fi
-rm -f /tmp/$$
-
-# Removal of home directories of non-existent users
+# Remove home directories of non-existent users
 #---------------------------------------------------
 cd "$(getent passwd | grep -i "$domain[\]$account" | cut -d: -f6)/.."
 flag=0
@@ -105,3 +82,24 @@ for dn in *; do
 		rm -rf "$dn"
 	fi 
 done
+
+# Create home directories for new users
+#------------------------------------
+cnt=0
+cd ${0%/*}
+getent passwd | awk -F":" -v search="^$domain" '$0 ~ search {printf("%s,%s,%s,%s,%s\n",substr($1,index($1,"\\")+1),$3,$4,$5,$6)}' > /tmp/$$
+while IFS="," read id uid gid name home; do 
+	if [ ! -d "$home" ]; then
+		[ $id = "guest" -o $id = "krbtgt" ] && continue;
+		[ $verbose -gt 0 ] && printf "Creating home directory for account %-40s\n" "'$name'"
+		((cnt++))
+	fi
+	chown -R "$uid:$gid" "$home"		
+	chmod 700 "$home"
+done < /tmp/$$
+if [ $verbose -gt 0 -a $cnt -gt 0 ]; then
+	printf "$(colorize 0 GREEN 'INFO'): Total number of newly created home directories is %d\n" $cnt
+fi
+rm -f /tmp/$$
+
+
