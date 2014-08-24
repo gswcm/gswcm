@@ -51,7 +51,7 @@ url_logOut="${url_base}/twbkwbis.P_Logout"
 #-- Header into csv file
 output="${FLAGS_term}.csv"
 [ -z ${FLAGS_major} ] || output="${FLAGS_term}-${FLAGS_major}.csv"
-echo "fname,mname,lname,uid,passwd,year,ou" > "$output"
+echo "fname,mname,lname,uid,passwd,year,ou,majr,term" > "$output"
 #-- Cookie file
 cookie="session.$$"
 touch $cookie
@@ -69,7 +69,7 @@ for m in ${majr[@]}; do
 	curl --cookie $cookie --data "majr=${m}" $url_listStudentsByMajor -s | 
 		html2text -width 120 |
 		grep "^913" | tee -a $output.raw |
-		sed "s/^913\([0-9]\{6\}\) \([A-Z][A-Za-z\x20\x27]\{1,\}\), \([A-Z][A-Za-z\x27]\{1,\}\) \([A-Z]*[.]*[a-z]*\) \{0,\}\([A-Z]\{2,\}\) \{1,\}\([a-z]\{1,\}[0-9]*\)@radar.gsw.edu$/\3,\4,\2,\6,\1,\5,${ou[$i]}/g" >> $output
+		sed "s/^913\([0-9]\{6\}\) \([A-Z][A-Za-z\x20\x27]\{1,\}\), \([A-Z][A-Za-z\x27]\{1,\}\) \([A-Z]*[.]*[a-z]*\) \{0,\}\([A-Z]\{2,\}\) \{1,\}\([a-z]\{1,\}[0-9]*\)@radar.gsw.edu$/\3,\4,\2,\6,\1,\5,${ou[$i]},${m},${FLAGS_term}/g" >> $output
 		((i++))
 done
 #-- Logout
