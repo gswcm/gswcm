@@ -59,12 +59,12 @@
 		error_reporting(error_reporting() & ~E_NOTICE);
 		$toIgnore = array("ttsatsin");
 		$i=0;
-		$maxUsersPerRun = 50;
+		$maxUsersToBeAddedPerRun = 0;
 		foreach($newUsers as $user) {
 			$username=get_new_username($user);
 			if(array_search($username,$curUsers) === FALSE) {
-				//-- This user is not yet listed in the directory... Add him	
-				if($maxUsersPerRun > 0 && $i++ > $maxUsersPerRun) {
+				//-- This user is not yet listed in the directory... Add him/her					
+				if($maxUsersToBeAddedPerRun > 0 && $i++ > $maxUsersToBeAddedPerRun) {
 					break;
 				}
 				if(array_search($username,$toIgnore) === FALSE) {
@@ -82,7 +82,7 @@
 							"department" 	=> $user["ou"],
 							"display_name" => $user["fname"]." ".$user["lname"],
 							"initials" 		=> $user["mname"],
-							"description" 	=> $user["year"]." @ ".$user["majr"];
+							"description" 	=> $user["year"]." @ ".$user["majr"]
 						)
 					);
 					if ($result == true) {
@@ -95,10 +95,12 @@
 				}
 			}
 			else {
-				$result = $adldap->user()->create(
+				//-- Otherwise... modify his/her "name" and "description"
+				$result = $adldap->user()->modify(
+					$username,
 					array(
 						"display_name" => $user["fname"]." ".$user["lname"],
-						"description" 	=> $user["year"]." @ ".$user["majr"];
+						"description" 	=> $user["year"]." @ ".$user["majr"]
 					)
 				);
 				if ($result == true) {
