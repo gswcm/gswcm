@@ -59,10 +59,12 @@
 		error_reporting(error_reporting() & ~E_NOTICE);
 		$toIgnore = array("ttsatsin");
 		$i=0;
+		$maxUsersPerRun = 50;
 		foreach($newUsers as $user) {
 			$username=get_new_username($user);
 			if(array_search($username,$curUsers) === FALSE) {
-				if($i++ > 50) {
+				//-- This user is not yet listed in the directory... Add him	
+				if($maxUsersPerRun > 0 && $i++ > $maxUsersPerRun) {
 					break;
 				}
 				if(array_search($username,$toIgnore) === FALSE) {
@@ -80,7 +82,7 @@
 							"department" 	=> $user["ou"],
 							"display_name" => $user["fname"]." ".$user["lname"],
 							"initials" 		=> $user["mname"],
-							"description" 	=> $user["year"]
+							"description" 	=> $user["year"]." @ ".$user["majr"];
 						)
 					);
 					if ($result == true) {
@@ -90,6 +92,21 @@
 					else {
 						error("Error: User '$username' was not added (".$adldap->getLastError().").\n");
 					}				
+				}
+			}
+			else {
+				$result = $adldap->user()->create(
+					array(
+						"display_name" => $user["fname"]." ".$user["lname"],
+						"description" 	=> $user["year"]." @ ".$user["majr"];
+					)
+				);
+				if ($result == true) {
+					$result=$adldap->group()->addUser("students",$username);
+					printf("User %-10s was successfully updated in the directory\n",$username);
+				}
+				else {
+					error("Error: User '$username' was not updated (".$adldap->getLastError().").\n");
 				}
 			}
 		}							
