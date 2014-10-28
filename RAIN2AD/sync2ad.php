@@ -11,7 +11,7 @@
 	function get_new_username($user) {
 		return $user["uid"];
 	}
-	
+
 	require_once(dirname(__FILE__) . '/adLDAP/src/adLDAP.php');
 	try{
 		//-- Open connection to AD server
@@ -63,7 +63,7 @@
 		foreach($newUsers as $user) {
 			$username=get_new_username($user);
 			if(array_search($username,$curUsers) === FALSE) {
-				//-- This user is not yet listed in the directory... Add him/her					
+				//-- This user is not yet listed in the directory... Add him/her
 				if($maxUsersToBeAddedPerRun > 0 && $i++ > $maxUsersToBeAddedPerRun) {
 					break;
 				}
@@ -91,7 +91,7 @@
 					}
 					else {
 						error("Error: User '$username' was not added (".$adldap->getLastError().").\n");
-					}				
+					}
 				}
 			}
 			else {
@@ -100,7 +100,8 @@
 					$username,
 					array(
 						"display_name" => $user["fname"]." ".$user["lname"],
-						"description" 	=> $user["year"]." @ ".$user["majr"]
+						"description" 	=> $user["year"]." @ ".$user["majr"],
+						"email"			=> $username."@radar.gsw.edu"
 					)
 				);
 				if ($result == true) {
@@ -111,10 +112,10 @@
 					error("Error: User '$username' was not updated (".$adldap->getLastError().").\n");
 				}
 			}
-		}							
+		}
 	}
 	catch (adLDAPException $e) {
 		error($e);
 		exit();
 	}
-?>		
+?>

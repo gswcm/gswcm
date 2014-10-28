@@ -9,6 +9,7 @@
 # define flags
 DEFINE_boolean 'debug' false 'Enable debug mode' 'd'
 DEFINE_string 'major' '' 'Student major (e.g. CSBS,CSMS,CSMA,ITCB,ITCM,ENGR)' 'm'
+DEFINE_boolean 'minor' false 'Search with respect to "minor" in place of "major"' 'M'
 DEFINE_string 'term' '' 'Term code (e.g. 201402 for SP14, 201405 for SU14, 201408 for FA14)' 't'
 DEFINE_string 'user' '' 'Username to access RAIN website' 'u'
 DEFINE_string 'pass' '' 'Password of the username' 'p'
@@ -24,8 +25,8 @@ eval set -- "${FLAGS_ARGV}"
 
 # sanity check
 if [ ${#FLAGS_term} -eq 0 -o ${#FLAGS_user} -eq 0 -o ${#FLAGS_pass} -eq 0 ]; then
-   flags_help
-   exit 1
+	flags_help
+	exit 1
 fi
 if [ ! -w $(pwd) ]; then
 	echo "Current directory is not writable." 1>&2
@@ -45,9 +46,16 @@ url_authorizeFromLogin="${url_base}/ztgkauth.zp_authorize_from_login"
 url_facutyServices="${url_base}/twbkwbis.P_GenMenu?name=bmenu.P_FacMainMnu"
 url_listMajors="${url_base}/bwwkmajr.P_GetListMajrCode"
 url_listStudentsByMajor="${url_base}/bwwkmajr.P_DispMajrList"
+url_listStudentsByMinor="${url_base}/bwwkminr.P_DispMinrList"
 url_listTerms="${url_base}/bwlkostm.P_FacSelTerm"
 url_storeTerm="${url_base}/bwlkostm.P_FacStoreTerm"
 url_logOut="${url_base}/twbkwbis.P_Logout"
+
+major_minor='majr'
+if [ ${FLAGS_minor} -eq ${FLAGS_TRUE} ]; then
+	url_listStudentsByMajor=$url_listStudentsByMinor
+	major_minor='minr'
+fi
 #-- Header into csv file
 output="${FLAGS_term}.csv"
 [ -z ${FLAGS_major} ] || output="${FLAGS_term}-${FLAGS_major}.csv"
@@ -62,11 +70,11 @@ curl --cookie "TESTID=set" --cookie-jar $cookie --data "sid=${FLAGS_user}&PIN=${
 curl --cookie $cookie $url_authorizeFromLogin -s -o /dev/null
 #-- Select term
 curl --cookie $cookie --data "term=${FLAGS_term}&name1=bmenu.P_FacMainMnu" $url_storeTerm -s -o /dev/null
-#-- Select major
+#-- Select major/minor
 i=0
 rm -f $output.raw
-for m in ${majr[@]}; do 	
-	curl --cookie $cookie --data "majr=${m}" $url_listStudentsByMajor -s | 
+for m in ${majr[@]}; do
+	curl --cookie $cookie --data "$major_minor=${m}" $url_listStudentsByMajor -s |
 		html2text -width 120 |
 		grep "^913" | tee -a $output.raw |
 		sed "s/^913\([0-9]\{6\}\) \([A-Z][A-Za-z\x20\x27]\{1,\}\), \([A-Z][A-Za-z\x27]\{1,\}\) \([A-Z]*[.]*[a-z]*\) \{0,\}\([A-Z]\{2,\}\) \{1,\}\([a-z]\{1,\}[0-9]*\)@radar.gsw.edu$/\3,\4,\2,\6,\1,\5,${ou[$i]},${m},${FLAGS_term}/g" >> $output
@@ -77,6 +85,3 @@ curl --cookie $cookie $url_logOut -s -o /dev/null
 #-- Clean up
 rm -f $cookie
 [ ${FLAGS_debug} -eq ${FLAGS_FALSE} ] && rm -f "$output.raw"
-
-
-
