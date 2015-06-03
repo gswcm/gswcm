@@ -1,5 +1,37 @@
 #!/bin/bash
 
+# function that colorizes stdin according to parameter passed (GREEN, CYAN, BLUE, YELLOW)
+colorize() {
+	bold="0"
+	GREEN="\033[$bold;32m"
+	CYAN="\033[$bold;36m"
+	GRAY="\033[$bold;37m"
+	BLUE="\033[$bold;34m"
+	RED="\033[$bold;31m"
+	YELLOW="\033[$bold;33m"
+	NORMAL="\033[m"
+	color=\$${1:-NORMAL}
+	# activate color passed as argument
+	echo -ne "`eval echo ${color}`"
+	# read stdin (pipe) and print from it:
+	# cat
+	shift; printf "$*"
+	# Note: if instead of reading from the pipe, you wanted to print
+	# the additional parameters of the function, you could do:
+	# shift; echo $*
+	# back to normal (no color)
+	echo -ne "${NORMAL}"
+}
+
+# function that checks for dependencies
+isInstalled() {
+	which "$1" > /dev/null || {
+		echo "$(colorize RED 'ERROR:') missing dependence(s). Please install '$1' and re-run the script." 1>&2
+		return 1;
+	}
+	return 0
+}
+
 # download shflags if missing
 [ ! -f shflags ] && wget -q http://shflags.googlecode.com/svn/trunk/source/1.0/src/shflags
 
@@ -24,10 +56,31 @@ FLAGS "$@" || exit 1
 eval set -- "${FLAGS_ARGV}"
 
 # sanity check
-if [ ${#FLAGS_term} -eq 0 -o ${#FLAGS_user} -eq 0 -o ${#FLAGS_pass} -eq 0 ]; then
+if [ ${#FLAGS_term} -eq 0 ]; then
 	flags_help
 	exit 1
 fi
+
+# check dependencies
+isInstalled "html2text"	|| exit 11
+isInstalled "curl"		|| exit 12
+
+# prompt for username and/or password
+if [ ${#FLAGS_user} -eq 0 ]; then
+	stty -echo
+	read -p "RAIN ID: " uname
+	stty echo; echo
+else
+	uname=${FLAGS_user}
+fi
+if [ ${#FLAGS_pass} -eq 0 ]; then
+	stty -echo
+	read -p "RAIN PIN: " pass
+	stty echo; echo
+else
+	pass=${FLAGS_pass}
+fi
+
 if [ ! -w $(pwd) ]; then
 	echo "Current directory is not writable." 1>&2
 	exit 2
@@ -65,7 +118,7 @@ cookie="session.$$"
 touch $cookie
 chmod 600 $cookie
 #-- Enter login credentials
-curl --cookie "TESTID=set" --cookie-jar $cookie --data "sid=${FLAGS_user}&PIN=${FLAGS_pass}" $url_loginValidation -s -o /dev/null
+curl --cookie "TESTID=set" --cookie-jar $cookie --data "sid=${uname}&PIN=${pass}" $url_loginValidation -s -o /dev/null
 #-- Redirect to successfull login page
 curl --cookie $cookie $url_authorizeFromLogin -s -o /dev/null
 #-- Select term

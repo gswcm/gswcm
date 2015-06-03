@@ -1,0 +1,4 @@
+LDAP over SSL requires 
+- installing CA certificate (/etc/ssl/certs/gswcm-ca.cer)
+- modifying /etc/ldap/ldap.conf to refer to it
+- making sure that normal DNS are preferred over mDNS (avahi) for name resolution (/etc/nsswitch.conf)
