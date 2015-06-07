@@ -2,9 +2,9 @@
 
 # SHFLAGS related
 #-----------------
-[ ! -f shflags ] && wget -q http://shflags.googlecode.com/svn/trunk/source/1.0/src/shflags
+[ ! -f /tmp/shflags ] && wget -P /tmp -q http://shflags.googlecode.com/svn/trunk/source/1.0/src/shflags
 #-- source shflags from current directory
-. ./shflags
+. /tmp/shflags
 DEFINE_boolean 'interactive' false 'enable interactive selection of the window' 'i'
 DEFINE_string 'name' Xournal 'name of the window (returned by xwininfo)' 'n'
 FLAGS_HELP="USAGE: $(basename $0) [flags]"
