@@ -76,7 +76,7 @@ getIDs() {
 		id_win=$(xwininfo | awk -F\" '/Window id/{print $2}')
 	else
 		id_win=${FLAGS_name}
-		if ! xwininfo -name $id_win 2> /dev/null 2> /dev/null; then
+		if ! xwininfo -name $id_win 1> /dev/null 2> /dev/null; then
 			echo "$(colorize RED 'ERROR:') Cannot find '$id_win' window"
 			exit 4
 		fi
