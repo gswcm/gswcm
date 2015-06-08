@@ -52,7 +52,7 @@ colorize() {
 }
 #--
 reinit() {
-	id_usb=$(dmesg | awk -F"[:]|[ ]" '/Manufacturer: Wacom/{print $3}' | head -1)
+	id_usb=$(dmesg | awk -F"[:]|[ ]" '/Manufacturer: Wacom/{print $3}' | tail -1)
 	if [ ${#id_usb} -eq 0 ]; then
 		echo "$(colorize RED 'ERROR:') Couldn't identify USB Device ID. You have to unplug/plug the device and restart the script"
 		exit 2
