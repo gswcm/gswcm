@@ -82,6 +82,6 @@ if [ ${FLAGS_full} -eq ${FLAGS_FALSE} ]; then
 else
 	scaling="desktop"
 fi
-xsetwacom set $id_stylus MapToArea $scaling
-xsetwacom set $id_eraser MapToArea $scaling
+xsetwacom set $id_stylus MapToOutput $scaling
+xsetwacom set $id_eraser MapToOutput $scaling
 xsetwacom set $id_touch touch off
