@@ -74,9 +74,11 @@ tl_y=$(($desktop_y+$desktop_h/2-$win_h/2))
 [ ${FLAGS_debug} -eq ${FLAGS_TRUE} ] && echo "$(colorize GREEN DEBUG:) \$tl_x x \$tl_y = $tl_x x $tl_y"
 
 for id in ${win_IDs[@]}; do
-	if [ "$id" = "$mID" ]; then
+	if [ "$id" != "$mID" ]; then
+		[ ${FLAGS_debug} -eq ${FLAGS_TRUE} ] && echo $id
 		case $(xwininfo -id $mID -all | awk 'BEGIN{s=0}/Maximized Horz/{s+=2}/Maximized Vert/{s+=1}END{print s}') in
-			0)	wmctrl -i -r $id -b remove,maximized_horz,maximized_vert
+			0)	wmctrl -i -r $id -b remove,maximized_vert
+				wmctrl -i -r $id -b remove,maximized_horz
 				;;
 			1) wmctrl -i -r $id -b remove,maximized_horz
 				wmctrl -i -r $id -b add,maximized_vert
