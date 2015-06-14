@@ -56,7 +56,7 @@ desktop_y=${desktop_geom[2]}
 desktop_w=${desktop_geom[3]}
 desktop_h=${desktop_geom[4]}
 [ ${FLAGS_debug} -eq ${FLAGS_TRUE} ] && echo "$(colorize GREEN DEBUG:) \${desktop_geom[@]} = ${desktop_geom[@]}"
-#-- Select Master window to copy size from
+#-- Select Master window to copy size and maximization state from
 win_IDs=( $(wmctrl -l | awk -v id=$desktop_id '$2 == id  {print $1}') )
 [ ${FLAGS_debug} -eq ${FLAGS_TRUE} ] && echo "$(colorize GREEN DEBUG:) \${win_IDs[@]} = ${win_IDs[@]}"
 declare -a win_titles
@@ -72,10 +72,11 @@ win_h=$(xwininfo -id $mID | awk '/Height:/{print $2}')
 tl_x=$(($desktop_x+$desktop_w/2-$win_w/2))
 tl_y=$(($desktop_y+$desktop_h/2-$win_h/2))
 [ ${FLAGS_debug} -eq ${FLAGS_TRUE} ] && echo "$(colorize GREEN DEBUG:) \$tl_x x \$tl_y = $tl_x x $tl_y"
-
+#-- Loop through all windows on the current desktop
 for id in ${win_IDs[@]}; do
 	if [ "$id" != "$mID" ]; then
 		[ ${FLAGS_debug} -eq ${FLAGS_TRUE} ] && echo $id
+		#-- Clone master window maximization settings
 		case $(xwininfo -id $mID -all | awk 'BEGIN{s=0}/Maximized Horz/{s+=2}/Maximized Vert/{s+=1}END{print s}') in
 			0)	wmctrl -i -r $id -b remove,maximized_vert
 				wmctrl -i -r $id -b remove,maximized_horz
@@ -89,18 +90,21 @@ for id in ${win_IDs[@]}; do
 			3) wmctrl -i -r $id -b add,maximized_horz,maximized_vert
 				;;
 		esac
+		#-- Resize window to fit master
+		wmctrl -i -r $id -e 1,$tl_x,$tl_y,$win_w,$win_h
 	fi
-	wmctrl -i -r $id -e 1,$tl_x,$tl_y,$win_w,$win_h
 done
-
+#-- Activate 'master' window
+wmctrl -i -a $mID
+#-- Print ffmpeg command with appropriately set parameters for 'x11grab'
 xwininfo -id $mID | awk -f <(sed -e '0,/^#!.*awk/d' $0) 1>&2
 exit 0
 
 #!/usr/bin/awk -f
 BEGIN {
 	FS = "[+]|[ \t]+"
-	prefix = "ffmpeg -y"
-	postfix = "-f pulse -i default -c:v libx264 -crf 0 -preset ultrafast test.mp4"
+	prefix = "sleep 5; beep; sleep 1; ffmpeg -y"
+	postfix = "-f pulse -i default -c:v libx264 -crf 0 -preset ultrafast temp.mp4"
 }
 /Relative upper-left X/ {
 	gapx = $5

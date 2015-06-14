@@ -76,6 +76,11 @@ getIDs() {
 [ ${FLAGS_full} -eq ${FLAGS_TRUE} ] && FLAGS_interactive=${FLAGS_FALSE}
 #-- Get ID of Wacom devices
 getIDs
+#-- Scaling and centering Xournal window if needed
+if xwininfo -name "Xournal" 1> /dev/null 2> /dev/null; then
+	echo "Would you like to scale 'Xournal' window and place in the middle of the screen? (Y/n)"
+	YesNo 0 && wmctrl -i -r $(xwininfo -name 'Xournal' | awk '/Window id:/{print $4}') -e 1,938,264,1965,1633
+fi
 #-- Rescalling the tablet
 if [ ${FLAGS_full} -eq ${FLAGS_FALSE} ]; then
 	scaling=$(xwininfo -name $id_win | awk '/-geometry/{print $2}')
