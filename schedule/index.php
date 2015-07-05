@@ -7,6 +7,10 @@ $mini = '0';
 if(isset($_GET['mini']) and $_GET['mini'] !== '') {
 	$mini = $_GET['mini'];
 }
+$debug = '0';
+if(isset($_GET['debug']) and $_GET['debug'] !== '') {
+	$debug = $_GET['debug'];
+}
 ?>
 <html>
 <head>
@@ -30,10 +34,13 @@ EOL;
 	?>
 	<script>
 		function getTerm(){
-			return <?php echo $term; ?>;
+			return '' + <?php echo $term; ?>;
 		}
 		function getMini(){
 			return '' + <?php echo $mini; ?>;
+		}
+		function getDebug(){
+			return '' + <?php echo $debug; ?>;
 		}
 	</script>
 </head>

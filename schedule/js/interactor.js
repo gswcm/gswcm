@@ -40,6 +40,9 @@ function updateInstructorInfo(nameMap, name, text, foundLocal) {
 			if(mini === '0') {
 				td.addClass('tooltip').tooltipster({theme: 'tooltipster-light'});
 			}
+			if(localStorage.getItem('sched.param(debug)') !== '0') {
+				console.log('Employee directory has no record for \'' + lname + '\'');
+			}
 		}
 	}
 };
@@ -47,10 +50,11 @@ $(window).load(function(){
 	var term = getTerm();
 	//-- Activate minimalistic interface if needed
 	var mini = getMini();
-	if(localStorage.getItem('sched.param(mini)') === null || localStorage.getItem('sched.param(mini)') !== mini) {
+	if(localStorage.getItem('sched.param(mini)') !== mini) {
 		localStorage.clear();
 	}
 	localStorage.setItem('sched.param(mini)', mini);
+	localStorage.setItem('sched.param(debug)', getDebug());
 	//-- Load data from RAIN schedule
 	var cnt = 0;
 	$.get('raintaker.php?schedterm=' + term, function(data){
