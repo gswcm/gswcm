@@ -1,44 +1,57 @@
 function getInstructorInfo(container) {
-	/*
-	var title = container.find('b:eq(0)').text().trim();
-	var email = container.find('a:eq(0)').text().trim();
-	var phone = container.find('a:eq(1)').text().trim();
-	container.find('a').remove();
-	container.find('b').remove();
-	var info = container.text().trim();
-	//return (title + '\n' + email + '\n' + info + '\n' + phone).trim();
-	*/
-	return container.html();
+	if(localStorage.getItem('sched.param(mini)') === '0') {
+		return container.html();
+	}
+	else {
+		var title = container.find('b:eq(0)').text().trim();
+		var email = container.find('a:eq(0)').text().trim();
+		var phone = container.find('a:eq(1)').text().trim();
+		container.find('a').remove();
+		container.find('b').remove();
+		var info = container.text().trim();
+		return (title + '\n' + email + '\n' + info + '\n' + phone).trim();
+	}
 }
 function updateInstructorInfo(nameMap, name, text, foundLocal) {
+	var mini = localStorage.getItem('sched.param(mini)');
 	var tdIndexInstructor = nameMap[name].tdIndexInstructor;
 	var lname = nameMap[name].lname;
 	for(var rowIndex=0, tc = nameMap[name].rows.length; rowIndex < tc; rowIndex++) {
 		var tr = nameMap[name].rows[rowIndex];
 		var td = tr.find("td:eq(" + tdIndexInstructor + ")");
 		if(text.indexOf('No results were found') === -1) {
-			td
-			.empty()
-			.append(
-				$('<a>')
-				.attr('href','https://gsw.edu/searchDirectory/employee/search.php?name=' + lname)
+			var a = $('<a>').attr('href','https://gsw.edu/searchDirectory/employee/search.php?name=' + lname)
 				.attr('target','_blank')
-				.text(name)
-				.addClass('tooltip').tooltipster({
+				.text(name);
+			if(mini === '0') {
+				a.addClass('tooltip').tooltipster({
 					content: $(text),
 					theme: 'tooltipster-light',
 					interactive: true
-				})
-			)
+				});
+			}
+			else {
+				a.attr('title',text);
+			}
+			td.empty().append(a);
 		}
 		else {
-			//console.log(name + ' | ' + text);
-			td.attr('title','No record found in the directory').addClass('tooltip').tooltipster({theme: 'tooltipster-light'});
+			td.attr('title','No record found in the directory');
+			if(mini === '0') {
+				td.addClass('tooltip').tooltipster({theme: 'tooltipster-light'});
+			}
 		}
 	}
 };
 $(window).load(function(){
 	var term = getTerm();
+	//-- Activate minimalistic interface if needed
+	var mini = getMini();
+	if(localStorage.getItem('sched.param(mini)') === null || localStorage.getItem('sched.param(mini)') !== mini) {
+		localStorage.clear();
+	}
+	localStorage.setItem('sched.param(mini)', mini);
+	//-- Load data from RAIN schedule
 	var cnt = 0;
 	$.get('raintaker.php?schedterm=' + term, function(data){
 		$('#topOfThePage').after($(data));
@@ -59,6 +72,7 @@ $(window).load(function(){
 			var tdIndexTitle = 4;
 			var tdIndexInstructor = 12;
 			var tdIndexSubj = 2;
+			var tdIndexCRN = 1;
 			var trLength = $(this).find("tr:eq(0) th").length;
 			$(this).find("tr:eq(0) th").each(function(th_index){
 				var th_data = $(this).text().toLowerCase().trim();
@@ -71,6 +85,9 @@ $(window).load(function(){
 				else if(th_data === 'subj code') {
 					tdIndexSubj = th_index;
 				}
+				else if(th_data === 'CRN') {
+					tdIndexCRN = th_index;
+				}
 			});
 			//-- Iterate through all table rows
 			$(this).find("tr:gt(0)").each(function(tr_index){
@@ -80,10 +97,11 @@ $(window).load(function(){
 				//-- Retrieve course information and replace course 'title' by a link to RAIN
 				var numb = tr.find("td:eq(" + (tdIndexTitle-1) + ")").text().trim();
 				var desc = tr.find("td:eq(" + tdIndexTitle + ")").text().trim();
+				var CRN = tr.find("td:eq(" + tdIndexCRN + ")").text().trim();
 				if(subj !== "" && subj.length >= 3) {
 					var anchor = subj + '_' + numb;
 					if(tr_index >= 0) {
-						tr.find("td:eq(" + tdIndexTitle + ")").empty().append($("<a>").attr({'href':'#'+anchor,'name':anchor}).text(desc).click(function(){
+						tr.find("td:eq(" + tdIndexTitle + ")").empty().append($("<a>").attr({'href':'#'+anchor,'name':anchor,'data-crn':CRN}).text(desc).click(function(){
 							if(tr.next().find('td').length == 1) {
 								tr.next().toggle('fast');
 							}
@@ -189,9 +207,21 @@ $(window).load(function(){
 		}
 		//-- Scroll to URL anchor (if defined)
 		var urlParts = (window.location.href).split('#',2);
-		if(urlParts.length > 1 && $('a[name=' + urlParts[1] + ']').length > 0) {
-			$(window).scrollTo($('a[name=' + urlParts[1] + ']'),'slow');
-			$('a[name=' + urlParts[1] + ']:eq(0)').trigger('click');
+		if(urlParts.length > 1) {
+			var urlTarget = urlParts[1];
+			if(urlTarget.match('^[0-9]{4}$') !== null) {
+				if($('a[data-crn=' + urlTarget + ']').length > 0) {
+					$(window).scrollTo($('a[data-crn=' + urlTarget + ']').trigger('click'));
+				}
+			}
+			else if(urlTarget.match('^[A-Z]{2,4}_[0-9]{1,4}[ABCLHJWMXK]?$') !== null) {
+				if($('a[name=' + urlTarget + ']').length > 0) {
+					$(window).scrollTo($('a[name=' + urlTarget + ']:eq(0)').trigger('click'));
+				}
+			}
+			else if(urlTarget.match('^[A-Z]$') !== null) {
+				$(window).scrollTo($('a[name=' + urlTarget + ']:eq(0)'));
+			}
 		}
 	});
 })
