@@ -11,7 +11,7 @@ $debug = '0';
 if(isset($_GET['debug']) and $_GET['debug'] !== '') {
 	$debug = $_GET['debug'];
 }
-$version = '1.0.2';
+$version = '1.0.0';
 if(isset($_GET['ver']) and $_GET['ver'] !== '') {
 	$version = $_GET['ver'];
 }
@@ -24,7 +24,7 @@ if(isset($_GET['ver']) and $_GET['ver'] !== '') {
 	<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.0.js"></script>
 	<script type="text/javascript" src="js/jquery.md5.js"></script>
 	<script type="text/javascript" src="js/buildings.js"></script>
-	<script type="text/javascript" src="js/interactor.js"></script>
+	<script type="text/javascript" src="js/interactor_test.js"></script>
 	<link rel="stylesheet" type="text/css" href="css/bootstrap-crop.css" />
 	<?php
 		if($mini == '0') {

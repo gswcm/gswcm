@@ -12,33 +12,6 @@ function getInstructorInfo(container) {
 		return (title + '\n' + email + '\n' + info + '\n' + phone).trim();
 	}
 }
-function updateLocationInfo(locMap,mapHTML,foundLocal) {
-	var mini = localStorage.getItem('sched.param(mini)');
-	for(var tdIndex=0, tc = locMap.td.length; tdIndex < tc; tdIndex++) {
-		if(mini === '0') {
-			locMap.td[tdIndex].addClass('tooltip').tooltipster({
-				content: $(mapHTML),
-				theme: 'tooltipster-light',
-				interactive: true,
-				arrow: false,
-				onlyOne: true,
-				updateAnimation: false,
-				autoClose: true,
-				functionReady: function(origin,tooltip){
-					$(tooltip).css({'background':'transparent','border':'none'});
-				}
-			});
-		}
-		else {
-			locMap.td[tdIndex].attr('title',locMap.buildingData.mini);
-		}
-		var locText = locMap.td[tdIndex].text().trim().split(/\s+/);
-		locMap.td[tdIndex].empty().append($('<a>').attr('href','#').click(function(){return false;}).css('cursor','not-allowed').text(locText[0]));
-		if(locText.length > 1) {
-			locMap.td[tdIndex].find('a').after($('<span>').text(' ' + locText[1]));
-		}
-	}
-}
 function updateInstructorInfo(nameMap, name, text, foundLocal) {
 	var mini = localStorage.getItem('sched.param(mini)');
 	var tdIndexInstructor = nameMap[name].tdIndexInstructor;
@@ -82,8 +55,6 @@ function scheduleProcessor(data) {
 	$('title').after($("<a href='#'>").css('float','right').click(function(){localStorage.clear();location.reload();return false;}).text('Refresh data'));
 	//-- Mapping between instructor's name and table-row where this instructor is listed
 	nameMap = {};
-	//-- Mapping between location code and map data in HTML
-	locMap = {};
 	//-- Check if schedule data have changed
 	//console.log($("font > table").length);
 	//-- Iterate through tables (each subject letter is associated with a table)
@@ -97,7 +68,6 @@ function scheduleProcessor(data) {
 		var tdIndexInstructor = 12;
 		var tdIndexSubj = 2;
 		var tdIndexCRN = 1;
-		var tdIndexLoc = 11;
 		var trLength = $(this).find("tr:eq(0) th").length;
 		$(this).find("tr:eq(0) th").each(function(th_index){
 			var th_data = $(this).text().toLowerCase().trim();
@@ -110,11 +80,8 @@ function scheduleProcessor(data) {
 			else if(th_data === 'subj code') {
 				tdIndexSubj = th_index;
 			}
-			else if(th_data === 'crn') {
+			else if(th_data === 'CRN') {
 				tdIndexCRN = th_index;
-			}
-			else if(th_data === 'location') {
-				tdIndexLoc = th_index;
 			}
 		});
 		//-- Iterate through all table rows
@@ -141,7 +108,7 @@ function scheduleProcessor(data) {
 						var keyDesc = "sched.desc(" + anchor + ")";
 
 						if(localStorage.getItem(keyDesc) === null) {
-							$.get("raintaker.php?term=" + localStorage.getItem('sched.param(term)') + "&subj=" + subj + "&numb=" + numb, function(data){
+							$.get("raintaker_old.php?term=" + localStorage.getItem('sched.param(term)') + "&subj=" + subj + "&numb=" + numb, function(data){
 								var courseDescContainer = $(data).find("table.datadisplaytable tr td.ntdefault").first();
 								if(courseDescContainer.length > 0) {
 									var courseDescText = courseDescContainer.contents().filter(function(){
@@ -194,15 +161,9 @@ function scheduleProcessor(data) {
 					return false;
 				}));
 			}
-			//-- Location pre-processing
-			var loc = tr.find("td:eq(" + tdIndexLoc + ")").text().trim().split(" ")[0];
-			if(!(loc in locMap)) {
-				locMap[loc] = {};
-				locMap[loc].td = [];
-			}
-			locMap[loc].td.push(tr.find("td:eq(" + tdIndexLoc + ")"));
-			//-- Instructor name pre-processing
+			//-- Populate map that binds instructor's name with owning 'tr'
 			var name = tr.find("td:eq(" + tdIndexInstructor + ")").text().trim();
+			//-- Associate references to table and row to instructor's name
 			if(!(name in nameMap)) {
 				nameMap[name] = {};
 				nameMap[name].rows = [];
@@ -211,27 +172,7 @@ function scheduleProcessor(data) {
 			nameMap[name].tdIndexInstructor = tdIndexInstructor;
 		});
 	});
-	//-- Location post-processing
-	var buildingData = getBuildingData();
-	for(key in locMap) {
-		(function(loc){
-			if(loc in buildingData) {
-				locMap[loc].buildingData = buildingData[loc];
-				if(localStorage.getItem('sched.location(' + loc + ')') === null) {
-					$.get('raintaker.php?location',function(data){
-						//var clearData = data.replace(/src=["]image/gi,'src="http://map.gsw.edu/image');
-						var mapHTML = $($.parseHTML(data)).find('div#' + buildingData[loc].maxi + ' div.modal-dialog').each(function(){$(this).find('.modal-header,.modal-footer').remove();})[0].outerHTML;
-						localStorage.setItem('sched.location(' + loc + ')',mapHTML);
-						updateLocationInfo(locMap[loc],mapHTML,false);
-					})
-				}
-				else {
-					updateLocationInfo(locMap[loc],localStorage.getItem('sched.location(' + loc + ')'),true);
-				}
-			}
-		})(key);
-	}
-	//-- Instructor name post-processing
+	//-- Examine populated map and update referred rows of course table
 	for(key in nameMap) {
 		(function(name){
 			var keyName = "sched.name(" + name + ")";
@@ -243,7 +184,7 @@ function scheduleProcessor(data) {
 			}
 			nameMap[name].lname = lname;
 			if(localStorage.getItem(keyName) === null) {
-				$.get('raintaker.php?name=' + lname, function(data){
+				$.get('raintaker_old.php?name=' + lname, function(data){
 					var blocks = $(data).find("p");
 					if(blocks.length == 1) {
 						localStorage.setItem(keyName, getInstructorInfo(blocks));
@@ -313,7 +254,7 @@ $(window).load(function(){
 	//-- Strore schedule term in localStorage
 	localStorage.setItem('sched.param(term)', getTerm());
 	//-- Load data from RAIN schedule
-	$.get('raintaker.php?schedterm=' + localStorage.getItem('sched.param(term)'), function(data){
+	$.get('raintaker_old.php?schedterm=' + localStorage.getItem('sched.param(term)'), function(data){
 		//http://jsfiddle.net/MCSyr/273/
 		scheduleProcessor(data);
 	});

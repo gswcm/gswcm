@@ -8,9 +8,6 @@
 	else if(isset($_GET['schedterm'])) {
 		$result = file_get_contents('https://rain.gsw.edu/sched'.$_GET['schedterm'].'.htm');
 	}
-	else if(isset($_GET['location'])) {
-		$result = file_get_contents('http://map.gsw.edu/index.html');
-	}
 	echo $result;
 ?>
 

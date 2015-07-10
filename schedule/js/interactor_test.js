@@ -141,7 +141,7 @@ function scheduleProcessor(data) {
 						var keyDesc = "sched.desc(" + anchor + ")";
 
 						if(localStorage.getItem(keyDesc) === null) {
-							$.get("raintaker.php?term=" + localStorage.getItem('sched.param(term)') + "&subj=" + subj + "&numb=" + numb, function(data){
+							$.get("raintaker_test.php?term=" + localStorage.getItem('sched.param(term)') + "&subj=" + subj + "&numb=" + numb, function(data){
 								var courseDescContainer = $(data).find("table.datadisplaytable tr td.ntdefault").first();
 								if(courseDescContainer.length > 0) {
 									var courseDescText = courseDescContainer.contents().filter(function(){
@@ -218,7 +218,7 @@ function scheduleProcessor(data) {
 			if(loc in buildingData) {
 				locMap[loc].buildingData = buildingData[loc];
 				if(localStorage.getItem('sched.location(' + loc + ')') === null) {
-					$.get('raintaker.php?location',function(data){
+					$.get('raintaker_test.php?location',function(data){
 						//var clearData = data.replace(/src=["]image/gi,'src="http://map.gsw.edu/image');
 						var mapHTML = $($.parseHTML(data)).find('div#' + buildingData[loc].maxi + ' div.modal-dialog').each(function(){$(this).find('.modal-header,.modal-footer').remove();})[0].outerHTML;
 						localStorage.setItem('sched.location(' + loc + ')',mapHTML);
@@ -243,7 +243,7 @@ function scheduleProcessor(data) {
 			}
 			nameMap[name].lname = lname;
 			if(localStorage.getItem(keyName) === null) {
-				$.get('raintaker.php?name=' + lname, function(data){
+				$.get('raintaker_test.php?name=' + lname, function(data){
 					var blocks = $(data).find("p");
 					if(blocks.length == 1) {
 						localStorage.setItem(keyName, getInstructorInfo(blocks));
@@ -313,7 +313,7 @@ $(window).load(function(){
 	//-- Strore schedule term in localStorage
 	localStorage.setItem('sched.param(term)', getTerm());
 	//-- Load data from RAIN schedule
-	$.get('raintaker.php?schedterm=' + localStorage.getItem('sched.param(term)'), function(data){
+	$.get('raintaker_test.php?schedterm=' + localStorage.getItem('sched.param(term)'), function(data){
 		//http://jsfiddle.net/MCSyr/273/
 		scheduleProcessor(data);
 	});
