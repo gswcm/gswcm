@@ -11,7 +11,7 @@ $debug = '0';
 if(isset($_GET['debug']) and $_GET['debug'] !== '') {
 	$debug = $_GET['debug'];
 }
-$version = '1.0.2';
+$version = '1.0.8';
 if(isset($_GET['ver']) and $_GET['ver'] !== '') {
 	$version = $_GET['ver'];
 }
@@ -22,6 +22,13 @@ if(isset($_GET['ver']) and $_GET['ver'] !== '') {
 	<title>GSW Schedule of Classes</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.0.js"></script>
+
+	<script type="text/javascript" src="js/jquery-ui.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css" />
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.structure.min.css" />
+	<link rel="stylesheet" type="text/css" href="css/jquery-ui.theme.min.css" />
+
+	<script type="text/javascript" src="js/jquery-timing.min.js"></script>
 	<script type="text/javascript" src="js/jquery.md5.js"></script>
 	<script type="text/javascript" src="js/buildings.js"></script>
 	<script type="text/javascript" src="js/interactor.js"></script>
@@ -32,9 +39,11 @@ if(isset($_GET['ver']) and $_GET['ver'] !== '') {
 	<link rel="stylesheet" type="text/css" href="css/tooltipster.css" />
 	<link rel="stylesheet" type="text/css" href="css/themes/tooltipster-shadow.css" />
 	<link rel="stylesheet" type="text/css" href="css/themes/tooltipster-light.css" />
+<link rel="stylesheet" type="text/css" href="css/themes/tooltipster-noir.css" />
+	<link rel="stylesheet" type="text/css" href="css/themes/tooltipster-punk.css" />
 	<script type="text/javascript" src="js/jquery.tooltipster.min.js"></script>
+	<!--<script src="//cdn.jsdelivr.net/jquery.scrollto/2.1.0/jquery.scrollTo.min.js"></script>-->
 	<script src="//fast.eager.io/KozO437RIl.js"></script>
-	<script src="//cdn.jsdelivr.net/jquery.scrollto/2.1.0/jquery.scrollTo.min.js"></script>
 EOL;
 		}
 	?>
@@ -54,7 +63,9 @@ EOL;
 	</script>
 </head>
 <body>
+	<div id="menuButton"></div>
 	<div id='topOfThePage'>
+		<span></span>
 	</div>
 </body>
 </html>
