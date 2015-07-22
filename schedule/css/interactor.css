@@ -1,0 +1,163 @@
+/* -- Location column URL decoration -- */
+td.td-loc a {
+	cursor : help;
+}
+/* -- Location tooltip -- */
+	/*
+	div.tooltipster-base < div.tooltipster-content < div.modal-dialog {
+		background : transparent;
+		border : none;
+		padding : 0px;
+	}
+	div.tooltipster-content < div.modal-dialog {
+		margin : 0px;
+		padding : 0px;
+	}
+	*/
+/* -- General info -- */
+	div.genInfo-container {
+		margin : auto 15px;
+		font-family : arial;
+	}
+	a.genInfo-refresh {
+		float : right;
+	}
+	div.genInfo-title {
+		margin: 10px auto;
+	}
+	div.genInfo-title center{
+		padding : 5px;
+		margin : 5px;
+	}
+	div.genInfo-notice,
+	div.genInfo-plagiarism {
+		padding : 10px;
+	}
+	div.genInfo-notice,
+	div.genInfo-plagiarism,
+	div.genInfo-title {
+		background: #E9EBF1;
+		border-radius: 5px;
+	}
+	div.genInfo-links {
+		margin : 2em auto;
+	}
+	table.genInfo-ptrm th, table.genInfo-ptrm td {
+		vertical-align : middle;
+		padding: 5px;
+	}
+	div.genInfo-plagiarism {
+		margin : 1em auto;
+	}
+/* -- Filter panel -- http://jsfiddle.net/aqb1v7mc/5/ -- */
+	div.filterPanel-container {
+		border : 1px solid black;
+		border-radius: 7px;
+		padding : 5px;/*10px;*/
+		position : fixed;
+		display : inline-block;
+		background : rgba(250, 255, 250, 1.0);
+		max-width : 500px;
+		font-size : 80%;
+	}
+	div.filterPanel-container fieldset p {
+		color : rgb(0, 0, 153);
+		margin : 0px;
+	}
+	div.filterPanel-container fieldset p ul {
+		margin : 5px;
+	}
+	div.filterPanel-container div.filterPanel-dowItem,
+	div.filterPanel-container div.filterPanel-closedSection,
+	div.filterPanel-container div.filterPanel-genInfo {
+		border : 0px solid black;
+		padding-top : 5px;
+		padding-bottom : 5px;
+		display : inline-block;
+	}
+	div.filterPanel-container div.dow-Any {
+		margin-left : 1em;
+	}
+	div.filterPanel-container div.filterPanel-closedSection {
+		margin-left : 1em;
+	}
+	div.filterPanel-container fieldset {
+		display : block;
+		border : 1px solid black;
+		border-radius : 5px;
+	}
+	div.filterPanel-container fieldset.filterPanel-hide {
+		margin-bottom : 5px;/*10px;*/
+	}
+	div.filterPanel-container fieldset.filterPanel-dow {
+	}
+	div.filterPanel-container button {
+		float : right;
+		margin-top: 7px;
+		margin-left : 10px;
+	}
+/* --- Filter trigger (button) --- */
+	#filterTrigger	{
+		position : fixed;
+	}
+/* --- Letter panel (navigation) --- */
+	div.navigation-letters {
+		border : 1px solid black;
+		border-radius : 5px;
+		padding : 0px;
+		display : inline-block;
+		position : fixed !important;
+		top : 50px;
+		left : 0px;
+		background : rgba(242, 255, 242, 1.0);
+	}
+	div.navigation-letters table {
+		font-family : arial;
+		font-size : 100%;
+	}
+	div.navigation-letters table a {
+		margin : 5px 0px;
+		text-decoration : none;
+	}
+/* --- All class offering tables --- */
+	div.filter-allTables {
+		font-family : arial;
+	}
+	div.filter-allTables table {
+		margin-top : 10px;
+		width : 96vw;
+	}
+	div.filter-allTables table tr:first-of-type {
+		outline : thin solid black;
+		vertical-align : middle;
+	}
+	div.filter-allTables table td.desc-container {
+		border : 1px solid black;
+	}
+	div.filter-allTables table td.desc-container div.desc-inner {
+		margin : 1em;
+	}
+	div.filter-allTables table td.desc-container span.desc-span-nonclick {
+		color : blue;
+		cursor : not-allowed;
+	}
+	div.filter-allTables table td.desc-container h3.desc-title {
+		margin : 0px auto;
+	}
+	div.filter-allTables table td.desc-container h3.desc-error {
+		color : red;
+		text-align : center;
+		margin : 0.5em auto;
+	}
+
+	@media only screen and (max-width : 850px) {
+		div.filter-allTables table th.filter-antimobile,
+		div.filter-allTables table td.filter-antimobile {
+			display : none;
+		}
+	}
+
+
+
+
+

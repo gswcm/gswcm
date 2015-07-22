@@ -32,7 +32,7 @@ function updateLocationInfo(locMap,mapHTML,foundLocal) {
 	var mini = localStorage.getItem('sched.param(mini)');
 	for(var tdIndex=0, tc = locMap.td.length; tdIndex < tc; tdIndex++) {
 		var locText = locMap.td[tdIndex].text().trim().split(/\s+/);
-		locMap.td[tdIndex].empty().append($('<a>').attr('href','#').click(function(){return false;}).css('cursor','pointer').text(locText[0]));
+		locMap.td[tdIndex].empty().addClass('td-loc').append($('<a>').attr('href','#').click(function(){return false;}).text(locText[0]));
 		if(locText.length > 1) {
 			locMap.td[tdIndex].find('a').after($('<span>').text(' ' + locText[1]));
 		}
@@ -43,16 +43,21 @@ function updateLocationInfo(locMap,mapHTML,foundLocal) {
 				interactive: true,
 				delay: 0,
 				arrow: true,
+				arrowColor: 'rgba(0,0,0,0.4)',
 				onlyOne: true,
 				trigger: 'click',
 				autoClose: true,
 				functionReady: function(origin,tooltip){
 					$(tooltip)
-						.css({'background':'transparent','border':'none','padding':'0px 0px'})
-						.click(function(){
-							$('.tooltip').tooltipster('hide');
-						})
-						.find('.modal-dialog').css({'margin':'0px'});
+					.css({
+						'background' : 'transparent',
+						'border':'none',
+						'padding':'0px 0px'
+					})
+					.click(function(){
+						$('.tooltip').tooltipster('hide');
+					})
+					.find('.modal-dialog').css({'margin':'0px'});
 				}
 			});
 		}
@@ -108,60 +113,139 @@ function scheduleProcessor(data) {
 		$(this).text('RAIN Homepage').attr({'href':'https://rain.gsw.edu','target':'_blank'});
 	})
 	//-- Move general info into a DIV with class name genInfo
-	var genInfoTemp = $('<div>').append($('#topOfThePage').nextUntil('a[name="A"]').detach());
-	//console.log(genInfoTemp[0].outerHTML);
+	var genInfoTemp = $('<div>').append($('#topOfThePage').nextUntil('a[href=""]').detach());
+	var listOfA = '';
+	genInfoTemp.find('center:eq(1) a').each(function(){
+		listOfA += $(this)[0].outerHTML + '|'
+	})
+	listOfA = listOfA.substr(0,listOfA.length-1).replace(/[|]/g,'<span>&nbsp;|&nbsp;</span>');
 	$('#topOfThePage').after(
-		$('<div class="filter-genInfo filter-all filter-shown">').html(
-			'<a href="#" onclick="localStorage.clear();location.reload();return false;" style="float:right;">Refresh data</a>' +
+		$('<div class="filter-genInfo filter-all filter-shown genInfo-container">').html(
+			'<a href="#" onclick="localStorage.clear();location.reload();return false;" class="genInfo-refresh">Refresh data</a>' +
 			genInfoTemp.find('h2:eq(0)')[0].outerHTML +
 			genInfoTemp.find('h2:eq(1)')[0].outerHTML +
 			genInfoTemp.find('table:eq(0)')[0].outerHTML +
-			'<div style="background:#E9EBF1;">' + genInfoTemp.find('table:eq(1) b')[0].outerHTML + '</div>' +
+			'<div class="genInfo-title">' + genInfoTemp.find('table:eq(1) b')[0].outerHTML + '</div>' +
 			'<p>' + genInfoTemp.find('table:eq(2) a').attr('target','_blank')[0].outerHTML + '</p>' +
-			'<div style="background:#E9EBF1;">'	+ genInfoTemp.find('table:eq(3) tr:eq(0) td:eq(0)').html() + '</div>' +
-			'<div style="margin:2em auto;">' + genInfoTemp.find('table:eq(3)').parent().next()[0].outerHTML + '</div>' +
-			genInfoTemp.find('table:eq(4)').css('width','100%')[0].outerHTML +
-			'<div style="margin:2em auto;">' + genInfoTemp.find('table:eq(5) tr:eq(0) td:eq(0)').not('hr').html().replace(/<hr>/,'') + '</div>'
+			'<div class="genInfo-notice">' + genInfoTemp.find('table:eq(3) tr:eq(0) td:eq(0)').html() + '</div>' +
+			'<div class="genInfo-links"><center>' + listOfA + '</center></div>' +
+			genInfoTemp.find('table:eq(4)').addClass('genInfo-ptrm').find('td,th').each(function(){$(this).html($(this).text().trim())}).end()[0].outerHTML +
+			'<div class="genInfo-plagiarism">' + genInfoTemp.find('table:eq(5) tr:eq(0) td:eq(0)').not('hr').html().replace(/<hr>/,'') + '</div>'
 		)
 	)
 	//-- Generate filter button from menuButton div and filter dialog
-	var filterContent = $('<div style="padding:auto 20px;width:800px;margin-top:3px;" id="filterPanel">')
-		.append($('<p style="color:rgb(0, 0, 153)">').html('Select items do be displayed/hidden. Please notice that <b>day-of-the-week</b> selection requires <b>exact</b> match (logical \'AND\'), e.g. to display Monday-Wednesday classes you have to check both "M" and "W" and nothing else. Do not combine "Online" offering with any other "days". Make sure to <u>untick</u> \'Any\' before specifying day filtering.'))
-		.append($('<input type="checkbox" id="cb_hideGenInfo">'))
-		.append($('<label for="cb_hideGenInfo">').text('Hide general information').css('margin-right','3em'))
-		.append($('<input type="checkbox" id="cb_hideClosedSections">'))
-		.append($('<label for="cb_hideClosedSections">').text('Hide "Closed" sections').css('margin-right','3em'))
-		.append($('<input type="checkbox" id="cb_showM" data-val="M" data-type="dow">').prop('disabled',true))
-		.append($('<label for="cb_showM">').text('M'))
-		.append($('<input type="checkbox" id="cb_showT" data-val="T" data-type="dow">').prop('disabled',true))
-		.append($('<label for="cb_showT">').text('T'))
-		.append($('<input type="checkbox" id="cb_showW" data-val="W" data-type="dow">').prop('disabled',true))
-		.append($('<label for="cb_showW">').text('W'))
-		.append($('<input type="checkbox" id="cb_showR" data-val="R" data-type="dow">').prop('disabled',true))
-		.append($('<label for="cb_showR">').text('R'))
-		.append($('<input type="checkbox" id="cb_showF" data-val="F" data-type="dow">').prop('disabled',true))
-		.append($('<label for="cb_showF">').text('F'))
-		.append($('<input type="checkbox" id="cb_showS" data-val="S" data-type="dow">').prop('disabled',true))
-		.append($('<label for="cb_showS">').text('S'))
-		.append($('<input type="checkbox" id="cb_showO" data-val="O" data-type="dow" title="Combined with \'Practicum\' courses">').prop('disabled',true))
-		.append($('<label for="cb_showO">').text('Online'))
+	var filterContent = $('<div>').addClass('filterPanel-container');
+	filterContent
+	.append(
+		$('<fieldset>')
+		.addClass('filterPanel-hide')
 		.append(
-			$('<input type="checkbox" id="cb_showAny">')
-			.css('margin-left','1em')
-			.change(function(){
-				$(this).parent().find('input[data-type="dow"]').prop('disabled',this.checked);
-			})
-			.prop('checked','true')
+			$('<legend>')
+			.html('<b>Items to hide</b>')
 		)
-		.append($('<label for="cb_showAny">').text('Any'))
-		.append($('<button>').css({'float':'right','margin-top':'-5px'}).text('Apply').click(function(){
+		.append(
+			$('<p>')
+			.html('Select which items to show/hide. <b>Any</b> combination is allowed.')
+		)
+		.append(
+			$('<div>')
+			.addClass('filterPanel-genInfo')
+			.append($('<input type="checkbox">'))
+			.append($('<label>').text('General information'))
+			.click(function(){
+				var input = $(this).find('input');
+				input[0].checked = !(input[0].checked);
+			})
+		)
+		.append(
+			$('<div>')
+			.addClass('filterPanel-closedSection')
+			.append($('<input type="checkbox">'))
+			.append($('<label>').text('Closed sections'))
+			.click(function(){
+				var input = $(this).find('input');
+				input[0].checked = !(input[0].checked);
+			})
+		)
+	)
+	.append(
+		$('<fieldset>')
+		.addClass('filterPanel-dow')
+		.append(
+			$('<legend>')
+			.html('<b>Days of the week to show</b>')
+		)
+		.append(
+			$('<p>')
+			.html(
+				'Make sure to provide <b>exact</b> match for specific days of the week that you\'d like to be shown. ' +
+				'Anything that is not <b>explicitely</b> selected will be hidden. ' +
+				'<ul>' +
+				'<li>Uncheck <b>Any</b> item if you need to choose select particular days</li>' +
+				'<li>Combining <b>Online</b> or <b>U</b> (undetermined) with any other selection will always result in an <b>empty</b> list</li>' +
+				'</ul>'
+			)
+		)
+	)
+	var dow = "M T W R F S U O Any".split(/\s+/gi);
+	$.each(dow,function(index){
+		var day = dow[index];
+		filterContent.find('fieldset.filterPanel-dow')
+		.append(
+			$('<div>')
+			.addClass('filterPanel-dowItem dow-' + day)
+			.append(
+				$('<input type="checkbox">')
+				.attr('data-val',day)
+			)
+			.append($('<label>').text((day === "O") ? "Online" : day))
+			.attr('title',(day === "U") ? "Undetermined (usually practice or semenar sessions)" : "")
+		)
+	})
+	filterContent
+	.find('div.dow-Any').each(function(){
+		var input = $(this).find('input');
+		input
+		.attr('data-type','dow-any')
+		.prop('disabled', false)
+		.prop('checked', true)
+		$(this).click(function(){
+			input[0].checked = !(input[0].checked);
+			$('div.filterPanel-container input[data-type="dow-day"]').prop('disabled',input[0].checked);
+		})
+	})
+	.end()
+	.find('div.filterPanel-dowItem:not(div.dow-Any)').each(function(){
+		var input = $(this).find('input');
+		input
+		.attr('data-type','dow-day')
+		.prop('disabled',true)
+		$(this).click(function(){
+			if(!$('div.filterPanel-container input[data-type="dow-any"]').prop('checked')) {
+				input[0].checked = !(input[0].checked);
+			}
+		})
+	})
+	.end()
+	.append(
+		$('<button>')
+		.text('Close')
+		.click(function(e){
+			$('div.filterPanel-container').hide();
+		})
+		.button()
+	)
+	.append(
+		$('<button>')
+		.text('Apply')
+		.click(function(e){
 			//-- Clean up previous settings for 'filter-hidden' and 'filter-shown' classes
 			$('.filter-hidden').removeClass('filter-hidden');
 			$('.filter-shown').removeClass('filter-shown');
 			//-- Handling dayes-of-the-week
-			var dowItems = $(this).parent().find('input:not(#cb_showAny)[data-type="dow"]:checked');
+			var dowItems = $('div.filterPanel-container input[data-type="dow-day"]:checked');
 			var dowSelector = '';
-			if($(this).parent().find('input#cb_showAny').prop('checked') === false) {
+			if($('div.filterPanel-container input[data-type="dow-any"]').prop('checked') === false) {
 				dowItems.each(function(){
 					dowSelector += $(this).attr('data-val') + ' ';
 				})
@@ -173,17 +257,19 @@ function scheduleProcessor(data) {
 				}
 			}
 			//-- General info div
-			if($(this).parent().find('input#cb_hideGenInfo')[0].checked) {
+			if($('div.filterPanel-genInfo').find('input')[0].checked) {
 				$('.filter-genInfo').addClass('filter-hidden');
 			}
 			//-- Closed sections
-			if($(this).parent().find('input#cb_hideClosedSections')[0].checked) {
+			if($('div.filterPanel-closedSection').find('input')[0].checked) {
 				$('.filter-closedSection').addClass('filter-hidden');
 			}
+			//-- Show all filtered items that don't have .filter-hidden class
 			$('.filter-all:not(.filter-hidden)').addClass('filter-shown').show();
+			//-- Hide all items that have .filter-hidden class
 			$('.filter-hidden').hide();
 			//-- Hide empty tables
-			$('font > table').each(function(index){
+			$('.filter-allTables table').each(function(index){
 				var entriesToHideOrShow = $(this);
 				if($(this).find('tr.filter-shown').length === 0) {
 					entriesToHideOrShow.hide()
@@ -196,67 +282,114 @@ function scheduleProcessor(data) {
 			if($(window).data('topRow') !== null) {
 				smoothScrollTo($(window).data('topRow').offset().top);
 			}
-		}).button())
-	$('#menuButton').text('Filter').button().draggable();
-	$('#menuButton').css({'position':'fixed','left':'50%'}).addClass('tooltip').tooltipster({
-		trigger: 'click',
-		arrow: false,
-		content: filterContent,
-		theme: 'tooltipster-noir',
-		speed: 100,
-		interactive: true
-	});
+		})
+		.button()
+	)
+	.find('input').click(function(e){
+		this.checked = !(this.checked)
+	})
+	.end()
+	.hide();
 
+	$('#filterTrigger').text('Filter').after($(filterContent)).button().draggable();
+	$('#filterTrigger').click(function(e){
+		$('div.filterPanel-container')
+		.css({
+			'left' : ($(window).width() - $('div.filterPanel-container').width())/2,
+			'top' : $('#filterTrigger').position().top + (isMobile() ? 0 : $('#filterTrigger').height() + 20)
+		})
+		.toggle();
+	})
+	$('div.filterPanel-container').draggable()
 	//-- Mapping between instructor's name and table-row where this instructor is listed
 	nameMap = {};
 	//-- Mapping between location code and map data in HTML
 	locMap = {};
+	//-- Navigation bar with letters
+	var alphabet = "# A B C D E F G H I J K L M N O P Q R S T U V W X Y Z".split(/\s+/gi);
+	$('div.filterPanel-container')
+	.after(
+		$('<div class="navigation-letters">')
+		.draggable({
+			delay : 300
+		})
+	);
+	$('div.navigation-letters')
+	.append(
+		$('<table>')
+	)
+	$.each(alphabet, function(letter) {
+		$('div.navigation-letters table')
+		.append(
+			$('<tr>')
+			.append(
+				$('<td align="center">')
+				.append(
+					$('<a>')
+					.attr('href','#' + alphabet[letter])
+					.text(alphabet[letter])
+					.prop('disabled',true)
+				)
+			)
+			.hide()
+		)
+	});
+	$('div.navigation-letters table tr:eq(0)').each(function(){
+		$(this).find('a').attr({
+			'href' : '#',
+			'title' : 'Top of the page'
+		})
+		$(this).show();
+	})
+	//-- Reformat DOM to move TABLEs into a dedcated DIV
+	$('div.filter-genInfo')
+	.after(
+		$('<div class="filter-allTables">')
+		.append($("font > table")
+		.detach())
+	);
+	$('div.filter-allTables')
+	.nextAll()
+	.remove();
 	//-- Iterate through tables (each subject letter is associated with a table)
-	var numOfTables = $("font > table").length;
-	$("font > table").each(function(table_index){
+	$('div.filter-allTables table')
+	.each(function(table_index){
 		//-- Skip certain tables if needed (!== 12 for 'T')
+		//if(table_index !== 12) {
 		if(table_index < 0) {
 			return true;
 		}
 		//-- Discover table layout to find indeces of 'td' where course description and instructor name are stored
-		var tdIndexStatus = -1;
-		var tdIndexCRN = -1;
-		var tdIndexSubj = -1;
-		var tdIndexTitle = -1;
-		var tdIndexDays = -1;
-		var tdIndexLoc = -1;
-		var tdIndexInstructor = -1;
-		var trLength = $(this).find("tr:eq(0) th").length;
-		$(this).find("tr:eq(0) th").each(function(th_index){
-			var th_data = $(this).text().toLowerCase().trim();
-			if(th_data === '' && tdIndexStatus == -1) {
-				tdIndexStatus = th_index;
+		var firstRow = $(this).find('tr:eq(0)');
+		var tdIndexStatus = 0;
+		var tdIndexCRN = firstRow.find('th:contains("CRN")').index();
+		var tdIndexSubj = firstRow.find('th:contains("SUBJ")').index();
+		var tdIndexNumb = firstRow.find('th:contains("NO.")').index();
+		var tdIndexTitle = firstRow.find('th:contains("TITLE")').index();
+		var tdIndexPTRM = firstRow.find('th:contains("PTRM")').index();
+		var tdIndexCredHours = firstRow.find('th:contains("CRED")').index();
+		var tdIndexTotalSeats = firstRow.find('th:contains("TOTAL")').index();
+		var tdIndexDays = firstRow.find('th:contains("DAYS")').index();
+		var tdIndexLoc = firstRow.find('th:contains("LOCATION")').index();
+		var tdIndexInstructor = firstRow.find('th:contains("INSTRUCTOR")').index();
+		var trLength = firstRow.find("th").length;
+		//-- Identiy 'first letter' of listed courses and add hidden anchor just before the table for navigation purposes
+		var tableLetter = $(this).find('tr:eq(1) td:eq(' + tdIndexSubj + ')').text().trim().substring(0,1);
+		$(this).before($('<a>').attr({'href':'','name':tableLetter}))
+		$('.navigation-letters table tr').each(function(){
+			if($(this).find('td:eq(0) a').text() === tableLetter) {
+				$(this).show();
 			}
-			else if(th_data === 'crn' && tdIndexCRN == -1) {
-				tdIndexCRN = th_index;
-			}
-			else if(th_data === 'subj code' && tdIndexSubj == -1) {
-				tdIndexSubj = th_index;
-			}
-			else if(th_data === 'title' && tdIndexTitle == -1) {
-				tdIndexTitle = th_index;
-			}
-			else if(th_data === 'days' && tdIndexDays == -1) {
-				tdIndexDays = th_index;
-			}
-			else if(th_data === 'location' && tdIndexLoc == -1) {
-				tdIndexLoc = th_index;
-			}
-			else if(th_data === 'instructor' && tdIndexInstructor == -1) {
-				tdIndexInstructor = th_index;
-			}
-		});
+		})
+		//-- Identify and mark header columns to be hidden in mobile view
+		firstRow.find('th:eq(' + tdIndexPTRM + '),th:eq(' + tdIndexCredHours + '),th:eq(' + tdIndexTotalSeats + '),th:last-of-type').addClass('filter-antimobile');
 		//-- Iterate through all table rows
 		$(this).find("tr:gt(0)").each(function(tr_index){
 			var tr = $(this);
+			tr.find('td:eq(' + tdIndexPTRM + '),td:eq(' + tdIndexCredHours + '),td:eq(' + tdIndexTotalSeats + '),td:last-of-type').addClass('filter-antimobile');
 			var days = tr.find("td:eq(" + tdIndexDays + ")").text().trim();
 			var subj = tr.find("td:eq(" + tdIndexSubj + ")").text().trim();
-			var numb = tr.find("td:eq(" + (tdIndexTitle-1) + ")").text().trim();
+			var numb = tr.find("td:eq(" + tdIndexNumb + ")").text().trim();
 			var desc = tr.find("td:eq(" + tdIndexTitle + ")").text().trim();
 			var CRN = tr.find("td:eq(" + tdIndexCRN + ")").text().trim();
 			//-- Conditionally assign classes that will be used for filtering
@@ -265,7 +398,12 @@ function scheduleProcessor(data) {
 				tr.addClass('filter-dow-' + days.replace(/\s+/gi,'-'))
 			}
 			else {
-				tr.addClass('filter-dow-O')
+				if(tr.find('td').last().text().trim().toLowerCase().indexOf('online') > -1) {
+					tr.addClass('filter-dow-O');
+				}
+				else {
+					tr.addClass('filter-dow-U');
+				}
 			}
 			//-- Closed section
 			if(tr.find("td:eq(" + tdIndexStatus + ")").text().trim() === 'C') {
@@ -290,14 +428,11 @@ function scheduleProcessor(data) {
 			else if(subj.length >= 3) {
 				var anchor = subj + '_' + numb;
 				tr.attr({'href':'#'+anchor,'name':anchor,'data-crn':CRN}).find("td:eq(" + tdIndexTitle + ")").empty().append($('<a href="#">').text(desc).click(function(){
-					if(!(tr.next().is(':visible')) || tr.next().find('td').length > 1) {
-						window.history.pushState(null,anchor,'#'+anchor);
-					}
 					if(tr.next().find('td').length == 1) {
 						tr.next().toggle('fast').toggleClass(tr.attr('class'));
 					}
 					else {
-						tr.after($("<tr>").append($("<td colspan='" + trLength + "' style='border: 1px solid black;'>")));
+						tr.after($("<tr>").append($('<td class="desc-container" colspan="' + trLength + '">')));
 						var container = tr.next().addClass(tr.attr('class')).find('td');
 						var keyDesc = "sched.desc(" + anchor + ")";
 
@@ -324,7 +459,7 @@ function scheduleProcessor(data) {
 													coursePrereqHTML += '<a href="' + currentNode.href.replace(document.domain,'rain.gsw.edu') + '" target="_blank">' + currentNode.text + '</a>';
 												}
 												else {
-													coursePrereqHTML += '<span style="color:blue; cursor:not-allowed;">' + currentNode.text + '</span>';
+													coursePrereqHTML += '<span class="desc-span-nonclick">' + currentNode.text + '</span>';
 												}
 											}
 											currentNode = currentNode.nextSibling;
@@ -338,18 +473,18 @@ function scheduleProcessor(data) {
 										'&crse_numb_in=' + numb +
 										'" target="_blank">here</a></span>'
 									}
-									var P1 = '<h3 style="margin: 0px auto;">Course Description:</h3>' + courseDescHTML;
-									var P2 = '<h3 style="margin: 0px auto;">Course Prerequisites:</h3>' + coursePrereqHTML;
+									var P1 = '<h3 class="desc-title">Course Description:</h3>' + courseDescHTML;
+									var P2 = '<h3 class="desc-title">Course Prerequisites:</h3>' + coursePrereqHTML;
 									localStorage.setItem(keyDesc, P1 + '<p>' + P2);
 								}
 								else {
-									localStorage.setItem(keyDesc,'<h3 style="color:red;text-align: center;margin: 0.5em auto;">Error: cannot access RAIN to retrieve course description</h3>');
+									localStorage.setItem(keyDesc,'<h3 class="desc-error">Error: cannot access RAIN to retrieve course description</h3>');
 								}
-								container.append($('<div style="margin: 1em;">').html(localStorage.getItem(keyDesc)));
+								container.append($('<div class="desc-inner">').html(localStorage.getItem(keyDesc)));
 							});
 						}
 						else {
-							container.append($('<div style="margin: 1em;">').html(localStorage.getItem(keyDesc)));
+							container.append($('<div class="desc-inner">').html(localStorage.getItem(keyDesc)));
 						}
 					}
 					return false;
@@ -475,11 +610,40 @@ function scheduleProcessor(data) {
 			}
 			$prev = $(this);
 		})
+		/*
 		if($(window).data('topRow') !== null) {
 			smoothScrollTo($(window).data('topRow').offset().top);
 		}
+		*/
 	},1000);
 }
+$(window).resize(function(){
+	$('.navigation-letters').css({
+		'left':$(this).width() - $('.navigation-letters').width() - 5,
+		'top':(document.body.clientHeight - $('.navigation-letters').height())/2
+	})
+	$('#filterTrigger')
+	.css({
+		'left':$(window).width()/2-$('#filterTrigger').width()/2,'top':'auto'
+	})
+	$('div.filterPanel-container')
+	.css({
+		'left' : ($(window).width() - $('div.filterPanel-container').width())/2,
+		'top' : $('#filterTrigger').position().top + (isMobile() ? 0 : $('#filterTrigger').height() + 20)
+	})
+})
+$(document).keydown(function(e){
+	var code = e.keyCode ? e.keyCode : e.which;
+	var filterPanel = $('.filterPanel-container');
+	if(filterPanel.filter(':hidden').length == 0) {
+		if(code === 27) {
+			filterPanel.hide();
+		}
+		else if(code === 13) {
+			filterPanel.find('button').trigger('click');
+		}
+	}
+});
 $(window).load(function(){
 	//-- Minimalistic interface and version control
 	var mini = getMini();
@@ -497,8 +661,8 @@ $(window).load(function(){
 	//-- Load data from RAIN schedule
 	$(window).data('topRow',null);
 	$.get('raintaker.php?schedterm=' + localStorage.getItem('sched.param(term)'), function(data){
-		//http://jsfiddle.net/MCSyr/273/
 		scheduleProcessor(data);
-		$('#menuButton').repeat(1000).toggleClass('ui-state-hover').wait(50).toggleClass('ui-state-hover');
+		$('#filterTrigger').repeat(1000).toggleClass('ui-state-hover').wait(50).toggleClass('ui-state-hover');
+		$(window).trigger('resize');
 	});
 })
