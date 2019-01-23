@@ -36,16 +36,24 @@
 		//-- Users not to be kept
 		$lockedUsers = array(
 			"simon.baev",
+			"monique.daniels",
 			"tanchik",
 			"plz",
+			"comelec",
 			"mstest",
 			"ay",
 			"arvind.shah",
 			"pi",
 			"stutest",
+			"sai.mukkavilli",
 			"karen.cook",
 			"john.stroyls",
-			"testfac1"
+			"linqiang.ge",
+			"manoj.thapa",
+			"kailash.ghimire",
+			"chadwick.gugg",
+			"testfac1",
+			"plz_stu"
 		);
 		//-- Search through $curUsers and REMOVE users which are not in $newUsers
 		$temp = array_map("get_new_username",$newUsers);

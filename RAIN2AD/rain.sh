@@ -87,13 +87,13 @@ if [ ! -w $(pwd) ]; then
 fi
 #-- Prepare list of majors and OUs
 if [ ${#FLAGS_major} -eq 0 ]; then
-	majr=( CSBS ITCB ITCM WBIT ENGR CSMS CSMA QISC TCSA GRTI MGMA MTAS MTCS MTFE MTHM MTTC PEMT )
-	ou=( CS CS CS CS CS CS CS CS CS Math Math Math Math Math Math Math Math )
+	majr=( CSBS ITCB ITCM WBIT ENGR CSMS CSMA QISC TCSA GRTI MGMA MTAS MTCS MTFE MTHM MTTC PEMT POST )
+	ou=( CS CS CS CS CS CS CS CS CS Math Math Math Math Math Math Math Math CS )
 else
 	majr=( ${FLAGS_major} )
 	ou=( )
 fi
-url_base="https://rain.gsw.edu/prod8x"
+url_base="https://gsw.gabest.usg.edu/pls/B420"
 url_loginValidation="${url_base}/twbkwbis.P_ValLogin"
 url_authorizeFromLogin="${url_base}/ztgkauth.zp_authorize_from_login"
 url_facutyServices="${url_base}/twbkwbis.P_GenMenu?name=bmenu.P_FacMainMnu"
@@ -129,8 +129,8 @@ rm -f $output.raw
 for m in ${majr[@]}; do
 	curl --cookie $cookie --data "$major_minor=${m}" $url_listStudentsByMajor -s |
 		html2text -width 120 |
-		grep "^913" | tee -a $output.raw |
-		sed "s/^913\([0-9]\{6\}\) \([A-Z][A-Za-z\x20\x27\x2D]\{1,\}\), \([A-Z][A-Za-z\x27\x2D]\{1,\}\) \([A-Z]*[.]*[a-z]*\) \{0,\}\([A-Z]\{2,\}\) \{1,\}\([a-z]\{1,\}[0-9]*\)@radar.gsw.edu$/\3,\4,\2,\6,\1,\5,${ou[$i]},${m},${FLAGS_term}/g" >> $output
+		grep "^913" | tee -a $output.raw | grep "radar[.]gsw[.]edu" |
+		sed "s/^913\([0-9]\{6\}\) \([A-Z][A-Za-z $(printf '\x27\x2D')]\{1,\}\), \([A-Z][A-Za-z$(printf '\x27\x2D')]\{1,\}\) \([A-Z]*[.]*[a-z]*\) \{0,\}\([A-Z]\{2,\}\) \{1,\}\([a-z]\{1,\}[0-9]*\)@radar.gsw.edu$/\3,\4,\2,\6,\1,\5,${ou[$i]},${m},${FLAGS_term}/g" >> $output
 		((i++))
 done
 #-- Logout

@@ -1,0 +1,2 @@
+awk -F, '/CSBS|ITCB|ITCM|ENGR/{printf "%s@radar.gsw.edu\n",$4}' SP17.csv
+

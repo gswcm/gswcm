@@ -1,4 +1,6 @@
 LDAP over SSL requires 
 - installing CA certificate (/etc/ssl/certs/gswcm-ca.cer)
 - modifying /etc/ldap/ldap.conf to refer to it
+- local ldap.conf can be found in "ldaprc" file located in working directory
 - making sure that normal DNS are preferred over mDNS (avahi) for name resolution (/etc/nsswitch.conf)
+- test it with ldapsearch -x -H ldaps://dc.gswcm.local -D "administrator@gswcm.local" -W -b "cn=simon baev,ou=cs,ou=people,dc=gswcm,dc=local"

@@ -1,0 +1,16 @@
+Assume ca_cert.pem being a CA certificate file. Steps 1-3 are to be run with admin privilege. 
+
+
+1. copy CA cert into /System/Library/OpenSSL/certs
+cp ca_cert.pem /System/Library/OpenSSL/certs
+
+2. Calculate hash and symlink CS cert file
+cd /System/Library/OpenSSL/certs
+ln -s ca_cert.pem $(openssl x509 -noout -hash -in ca_cert.pem)
+
+3. Edit /etc/openldap/ldap.conf to read
+TLS_REQCERT	allow
+TLS_CACERTDIR /System/Library/OpenSSL/certs
+
+4. Test it with 
+ldapsearch -H ldaps://dc.gswcm.local -D "administrator@gswcm.local" -W -b "cn=simon baev,ou=cs,ou=people,dc=gswcm,dc=local"
